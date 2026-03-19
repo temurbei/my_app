@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OPENAI NEXUS</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+    :root{
+      --bg:#050508;
+      --s:#0d0d14;
+      --b:#1e1e30;
+      --a:#7c3aed;
+      --a2:#06b6d4;
+      --t:#e2e8f0;
+      --m:#64748b;
+      --g:rgba(124,58,237,.3);
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      background:var(--bg);
+      color:var(--t);
+      font-family:'Syne',sans-serif;
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    body::before{
+      content:'';
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+      background:
+        radial-gradient(ellipse 500px 300px at 15% 15%,rgba(124,58,237,.07),transparent 70%),
+        radial-gradient(ellipse 400px 300px at 85% 85%,rgba(6,182,212,.05),transparent 70%);
+    }
+
+    .grid{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+      background-image:
+        linear-gradient(rgba(124,58,237,.03) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(124,58,237,.03) 1px,transparent 1px);
+      background-size:40px 40px;
+    }
+
+    .w{
+      position:relative;
+      z-index:1;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:13px 20px;
+      border-bottom:1px solid var(--b);
+      position:sticky;
+      top:0;
+      z-index:100;
+      background:rgba(5,5,8,.92);
+      backdrop-filter:blur(20px);
+    }
+
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:20px;
+      font-weight:800;
+    }
+
+    .li{
+      width:34px;
+      height:34px;
+      background:linear-gradient(135deg,var(--a),var(--a2));
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
+      animation:pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse{
+      0%,100%{box-shadow:0 0 0 0 var(--g)}
+      50%{box-shadow:0 0 18px 3px var(--g)}
+    }
+
+    .lt{
+      background:linear-gradient(90deg,#fff,var(--a2));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+
+    .hbadge{
+      padding:4px 11px;
+      background:rgba(34,197,94,.12);
+      border:1px solid rgba(34,197,94,.25);
+      border-radius:20px;
+      font-size:11px;
+      color:#22c55e;
+      font-family:'Space Mono',monospace;
+    }
+
+    .tabs{
+      display:flex;
+      gap:3px;
+      padding:9px 20px;
+      overflow-x:auto;
+      border-bottom:1px solid var(--b);
+    }
+
+    .tab{
+      padding:7px 14px;
+      border-radius:8px;
+      border:1px solid transparent;
+      background:transparent;
+      color:var(--m);
+      font-family:'Syne',sans-serif;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+      transition:all .2s;
+      white-space:nowrap;
+    }
+
+    .tab:hover{
+      color:var(--t);
+      border-color:var(--b);
+    }
+
+    .tab.on{
+      background:linear-gradient(135deg,rgba(124,58,237,.18),rgba(6,182,212,.08));
+      border-color:var(--a);
+      color:#fff;
+    }
+
+    .c{
+      max-width:840px;
+      margin:0 auto;
+      padding:18px;
+    }
+
+    .panel{
+      display:none;
+      animation:fi .3s ease;
+    }
+
+    .panel.on{
+      display:block;
+    }
+
+    @keyframes fi{
+      from{opacity:0;transform:translateY(7px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    .cw{
+      display:flex;
+      flex-direction:column;
+      gap:11px;
+    }
+
+    .mr{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+
+    .mb{
+      padding:5px 12px;
+      border-radius:20px;
+      border:1px solid var(--b);
+      background:transparent;
+      color:var(--m);
+      font-size:11px;
+      font-family:'Space Mono',monospace;
+      cursor:pointer;
+      transition:all .2s;
+    }
+
+    .mb.on,
+    .mb:hover{
+      border-color:var(--a);
+      color:#fff;
+      background:rgba(124,58,237,.14);
+    }
+
+    .qr{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+
+    .qb{
+      padding:5px 11px;
+      border-radius:8px;
+      border:1px solid var(--b);
+      background:var(--s);
+      color:var(--t);
+      font-size:12px;
+      cursor:pointer;
+      transition:all .2s;
+      font-family:'Syne',sans-serif;
+    }
+
+    .qb:hover{
+      border-color:var(--a);
+      background:rgba(124,58,237,.1);
+    }
+
+    .msgs{
+      background:var(--s);
+      border:1px solid var(--b);
+      border-radius:15px;
+      padding:16px;
+      min-height:350px;
+      max-height:430px;
+      overflow-y:auto;
+      display:flex;
+      flex-direction:column;
+      gap:11px;
+    }
+
+    .msgs::-webkit-scrollbar{
+      width:3px;
+    }
+
+    .msgs::-webkit-scrollbar-thumb{
+      background:var(--b);
+      border-radius:2px;
+    }
+
+    .msg{
+      display:flex;
+      gap:9px;
+      animation:mi .3s ease;
+    }
+
+    @keyframes mi{
+      from{opacity:0;transform:translateX(-5px)}
+      to{opacity:1;transform:translateX(0)}
+    }
+
+    .msg.u{
+      flex-direction:row-reverse;
+    }
+
+    .msg.u .mb2{
+      align-items:flex-end;
+    }
+
+    .av{
+      width:30px;
+      height:30px;
+      border-radius:9px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:14px;
+      flex-shrink:0;
+    }
+
+    .av.ai{
+      background:linear-gradient(135deg,var(--a),var(--a2));
+    }
+
+    .av.u{
+      background:linear-gradient(135deg,#f59e0b,#ef4444);
+    }
+
+    .mb2{
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+      max-width:82%;
+    }
+
+    .mn{
+      font-size:10px;
+      font-weight:700;
+      color:var(--m);
+      font-family:'Space Mono',monospace;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+
+    .mt{
+      background:var(--bg);
+      border:1px solid var(--b);
+      border-radius:11px;
+      padding:10px 13px;
+      font-size:14px;
+      line-height:1.65;
+      color:var(--t);
+      word-break:break-word;
+    }
+
+    .msg.u .mt{
+      background:linear-gradient(135deg,rgba(124,58,237,.18),rgba(6,182,212,.08));
+      border-color:rgba(124,58,237,.25);
+    }
+
+    .think{
+      display:flex;
+      gap:4px;
+      align-items:center;
+      padding:5px 0;
+    }
+
+    .dot{
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:var(--a);
+      animation:bo 1.4s ease-in-out infinite;
+    }
+
+    .dot:nth-child(2){animation-delay:.2s}
+    .dot:nth-child(3){animation-delay:.4s}
+
+    @keyframes bo{
+      0%,80%,100%{transform:scale(.8);opacity:.5}
+      40%{transform:scale(1.2);opacity:1}
+    }
+
+    .ir{
+      display:flex;
+      gap:8px;
+      align-items:flex-end;
+    }
+
+    textarea{
+      flex:1;
+      background:var(--s);
+      border:1px solid var(--b);
+      border-radius:11px;
+      padding:11px 13px;
+      color:var(--t);
+      font-family:'Syne',sans-serif;
+      font-size:14px;
+      resize:none;
+      outline:none;
+      min-height:46px;
+      max-height:110px;
+      transition:border-color .2s;
+      line-height:1.5;
+    }
+
+    textarea:focus{
+      border-color:var(--a);
+    }
+
+    textarea::placeholder{
+      color:var(--m);
+    }
+
+    .sb{
+      width:46px;
+      height:46px;
+      border-radius:11px;
+      border:none;
+      background:linear-gradient(135deg,var(--a),var(--a2));
+      color:#fff;
+      font-size:17px;
+      cursor:pointer;
+      transition:all .2s;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .sb:hover{
+      transform:scale(1.05);
+      box-shadow:0 0 18px var(--g);
+    }
+
+    .sb:disabled{
+      opacity:.4;
+      cursor:not-allowed;
+      transform:none;
+    }
+
+    .st{
+      font-size:11px;
+      font-weight:700;
+      color:var(--m);
+      text-transform:uppercase;
+      letter-spacing:1px;
+      margin-bottom:13px;
+      display:flex;
+      align-items:center;
+      gap:7px;
+    }
+
+    .st::after{
+      content:'';
+      flex:1;
+      height:1px;
+      background:var(--b);
+    }
+
+    .pf{
+      background:var(--s);
+      border:1px solid var(--b);
+      border-radius:15px;
+      padding:18px;
+    }
+
+    .fg{
+      margin-bottom:12px;
+    }
+
+    label{
+      display:block;
+      font-size:11px;
+      font-weight:700;
+      color:var(--m);
+      margin-bottom:5px;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+
+    select,
+    input[type=text]{
+      width:100%;
+      background:var(--bg);
+      border:1px solid var(--b);
+      border-radius:9px;
+      padding:9px 12px;
+      color:var(--t);
+      font-family:'Syne',sans-serif;
+      font-size:14px;
+      outline:none;
+      transition:border-color .2s;
+    }
+
+    select:focus,
+    input:focus{
+      border-color:var(--a);
+    }
+
+    select option{
+      background:#111120;
+    }
+
+    .gb{
+      width:100%;
+      padding:12px;
+      background:linear-gradient(135deg,var(--a),var(--a2));
+      border:none;
+      border-radius:11px;
+      color:#fff;
+      font-family:'Syne',sans-serif;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:all .2s;
+      margin-top:5px;
+    }
+
+    .gb:hover{
+      opacity:.9;
+      transform:translateY(-1px);
+      box-shadow:0 6px 20px var(--g);
+    }
+
+    .gb:disabled{
+      opacity:.4;
+      cursor:not-allowed;
+      transform:none;
+    }
+
+    .ob{
+      margin-top:14px;
+      background:var(--bg);
+      border:1px solid var(--b);
+      border-radius:11px;
+      padding:34px 13px 13px;
+      font-size:14px;
+      line-height:1.7;
+      color:var(--t);
+      white-space:pre-wrap;
+      position:relative;
+    }
+
+    .cb{
+      position:absolute;
+      top:9px;
+      right:9px;
+      padding:3px 9px;
+      background:rgba(124,58,237,.18);
+      border:1px solid rgba(124,58,237,.28);
+      border-radius:6px;
+      color:var(--a2);
+      font-size:11px;
+      cursor:pointer;
+      font-family:'Space Mono',monospace;
+      transition:all .2s;
+    }
+
+    .cb:hover{
+      background:rgba(124,58,237,.35);
+    }
+
+    .tg{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(185px,1fr));
+      gap:11px;
+    }
+
+    .tc{
+      background:var(--s);
+      border:1px solid var(--b);
+      border-radius:14px;
+      padding:15px;
+      cursor:pointer;
+      transition:all .25s;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .tc::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:2px;
+      background:var(--cc,linear-gradient(90deg,var(--a),var(--a2)));
+    }
+
+    .tc:hover{
+      border-color:rgba(124,58,237,.35);
+      transform:translateY(-2px);
+      box-shadow:0 7px 24px rgba(0,0,0,.25);
+    }
+
+    .tci{
+      font-size:22px;
+      margin-bottom:7px;
+    }
+
+    .tcn{
+      font-size:13px;
+      font-weight:800;
+      margin-bottom:3px;
+    }
+
+    .tcd{
+      font-size:12px;
+      color:var(--m);
+      line-height:1.5;
+    }
+
+    .tbg{
+      position:absolute;
+      top:9px;
+      right:9px;
+      font-size:9px;
+      font-family:'Space Mono',monospace;
+      background:rgba(34,197,94,.12);
+      border:1px solid rgba(34,197,94,.22);
+      border-radius:4px;
+      padding:1px 5px;
+      color:#22c55e;
+    }
+
+    .tbg.p{
+      background:rgba(245,158,11,.12);
+      border-color:rgba(245,158,11,.22);
+      color:#fbbf24;
+    }
+
+    .sp{
+      display:inline-block;
+      width:13px;
+      height:13px;
+      border:2px solid rgba(255,255,255,.2);
+      border-top-color:#fff;
+      border-radius:50%;
+      animation:spin .8s linear infinite;
+      vertical-align:middle;
+      margin-right:5px;
+    }
+
+    @keyframes spin{
+      to{transform:rotate(360deg)}
+    }
+
+    @media(max-width:580px){
+      .c{padding:11px;}
+      header{padding:10px 14px;}
+      .tabs{padding:7px 12px;}
+      .tg{grid-template-columns:1fr 1fr;}
+    }
+  </style>
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="w">
+
+    <header>
+      <div class="logo">
+        <div class="li">⚡</div>
+        <span class="lt">OPENAI NEXUS</span>
+      </div>
+      <div class="hbadge">✅ OPENAI</div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab on" onclick="go('chat',this)">💬 AI Chat</button>
+      <button class="tab" onclick="go('img',this)">🎨 Rasm</button>
+      <button class="tab" onclick="go('vid',this)">🎬 Video</button>
+      <button class="tab" onclick="go('aud',this)">🎵 Audio</button>
+      <button class="tab" onclick="go('tools',this)">🛠 AI Tools</button>
+    </div>
+
+    <div class="c">
+
+      <div class="panel on" id="p-chat">
+        <div class="cw">
+          <div class="mr">
+            <button class="mb on" onclick="sm(this,'smart')">🧠 Pro</button>
+            <button class="mb" onclick="sm(this,'fast')">⚡ Fast</button>
+            <button class="mb" onclick="sm(this,'creative')">🎨 Creative</button>
+            <button class="mb" onclick="sm(this,'code')">💻 Code</button>
+          </div>
+
+          <div class="qr">
+            <button class="qb" onclick="qp(`Menga kuchli biznes g'oyasi ber`)">💡 Biznes</button>
+            <button class="qb" onclick="qp('Python kalkulyator kodi yoz')">💻 Kod</button>
+            <button class="qb" onclick="qp(`Sun'iy intellekt haqida tushuntir`)">🤖 AI</button>
+            <button class="qb" onclick="qp(`Ingliz tili o'rganishga maslahat`)">📚 Til</button>
+            <button class="qb" onclick="qp('Meni kuchli motivatsiyalantir')">🔥 Motivatsiya</button>
+          </div>
+
+          <div class="msgs" id="msgs">
+            <div class="msg">
+              <div class="av ai">⚡</div>
+              <div class="mb2">
+                <div class="mn">OPENAI NEXUS</div>
+                <div class="mt">
+                  Salom! Men OPENAI NEXUS — har qanday savol, kod, rasm promti, video promptga javob beraman! 🚀
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ir">
+            <textarea
+              id="inp"
+              placeholder="Nima so'raysiz?"
+              rows="1"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"
+              oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+            <button class="sb" id="sb" onclick="send()">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="p-img">
+        <div class="st">🎨 Rasm Prompt Generatori</div>
+        <div class="pf">
+          <div class="fg">
+            <label>Mavzu</label>
+            <input type="text" id="is" placeholder="tog', robot, portret..." />
+          </div>
+
+          <div class="fg">
+            <label>Uslub</label>
+            <select id="ist">
+              <option value="photorealistic, ultra detailed, 8k">📸 Fotorealistik</option>
+              <option value="digital concept art, trending artstation">🎨 Digital Art</option>
+              <option value="anime style, vibrant manga">🎌 Anime</option>
+              <option value="oil painting, classical, textured">🖼 Moy bo'yoq</option>
+              <option value="watercolor, soft flowing edges">💧 Akvarel</option>
+              <option value="3D render, octane, physically based">🧊 3D Render</option>
+              <option value="cyberpunk, neon, dystopian futuristic">🤖 Cyberpunk</option>
+              <option value="epic fantasy art, magical, dramatic">🐉 Fantasy</option>
+            </select>
+          </div>
+
+          <div class="fg">
+            <label>Kayfiyat</label>
+            <select id="im">
+              <option value="dramatic cinematic lighting, volumetric rays">🎬 Sinematik</option>
+              <option value="golden hour, warm soft bokeh light">🌅 Oltin soat</option>
+              <option value="dark moody atmosphere, deep shadows">🌑 Qorong'u</option>
+              <option value="vibrant colorful, high contrast">🌈 Rang-barang</option>
+              <option value="ethereal dreamy, soft glow, misty">✨ Orzuvor</option>
+              <option value="neon lights, rain reflections, night city">💜 Neon</option>
+            </select>
+          </div>
+
+          <div class="fg">
+            <label>Platforma</label>
+            <select id="ip">
+              <option value="DALL·E / GPT Image">DALL·E / GPT Image</option>
+              <option value="Midjourney v6">Midjourney v6</option>
+              <option value="Stable Diffusion XL">Stable Diffusion XL</option>
+              <option value="Adobe Firefly">Adobe Firefly</option>
+              <option value="Freepik AI">Freepik AI</option>
+            </select>
+          </div>
+
+          <button class="gb" id="ib" onclick="gp('i')">⚡ Prompt Yaratish</button>
+          <div class="ob" id="io" style="display:none">
+            <button class="cb" onclick="cp('iot')">COPY</button>
+            <span id="iot"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="p-vid">
+        <div class="st">🎬 Video Prompt Generatori</div>
+        <div class="pf">
+          <div class="fg">
+            <label>Mavzu</label>
+            <input type="text" id="vs" placeholder="shahar, dengiz, tabiat..." />
+          </div>
+
+          <div class="fg">
+            <label>Video turi</label>
+            <select id="vt">
+              <option value="cinematic slow motion, smooth camera">🎬 Sinematik</option>
+              <option value="timelapse, accelerated time">⏰ Timelapse</option>
+              <option value="smooth aerial drone footage">🚁 Drone</option>
+              <option value="dynamic action scene, fast cuts">💥 Action</option>
+              <option value="nature documentary, calm steady">🌿 Hujjatli</option>
+              <option value="abstract animation, motion graphics">🌀 Abstrakt</option>
+            </select>
+          </div>
+
+          <div class="fg">
+            <label>Platforma</label>
+            <select id="vp">
+              <option value="Sora">Sora</option>
+              <option value="Runway Gen-3">Runway Gen-3</option>
+              <option value="Pika Labs">Pika Labs</option>
+              <option value="Kling AI">Kling AI</option>
+              <option value="Luma Dream Machine">Luma Dream Machine</option>
+            </select>
+          </div>
+
+          <button class="gb" id="vb" onclick="gp('v')">⚡ Video Prompt Yaratish</button>
+          <div class="ob" id="vo" style="display:none">
+            <button class="cb" onclick="cp('vot')">COPY</button>
+            <span id="vot"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="p-aud">
+        <div class="st">🎵 Audio Prompt Generatori</div>
+        <div class="pf">
+          <div class="fg">
+            <label>Tavsif</label>
+            <input type="text" id="as2" placeholder="epik musiqa, tabiat ovozi..." />
+          </div>
+
+          <div class="fg">
+            <label>Janr</label>
+            <select id="ag">
+              <option value="epic orchestral cinematic, Hans Zimmer style">🎻 Epik Orkestr</option>
+              <option value="lo-fi chill hip hop, study beats">🎧 Lo-fi</option>
+              <option value="electronic EDM, energetic festival">⚡ EDM</option>
+              <option value="ambient soundscape, peaceful nature">🌿 Ambient</option>
+              <option value="smooth jazz piano, late night">🎹 Jazz</option>
+              <option value="hard trap, heavy 808 bass">🔊 Trap</option>
+              <option value="classical piano, emotional solo">🎼 Klassik</option>
+              <option value="dark synthwave, retro 80s futuristic">🌙 Synthwave</option>
+            </select>
+          </div>
+
+          <div class="fg">
+            <label>Platforma</label>
+            <select id="ap">
+              <option value="OpenAI Audio / TTS prompt">OpenAI Audio / TTS</option>
+              <option value="Suno AI">Suno AI</option>
+              <option value="Udio">Udio</option>
+              <option value="Stable Audio">Stable Audio</option>
+            </select>
+          </div>
+
+          <button class="gb" id="ab" onclick="gp('a')">⚡ Audio Prompt Yaratish</button>
+          <div class="ob" id="ao" style="display:none">
+            <button class="cb" onclick="cp('aot')">COPY</button>
+            <span id="aot"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="p-tools">
+        <div class="st">🛠 Barcha AI Platformalar</div>
+        <div class="tg">
+          <div class="tc" style="--cc:linear-gradient(90deg,#10a37f,#34d399)" onclick="open('https://chatgpt.com','_blank')">
+            <div class="tbg">OPENAI</div>
+            <div class="tci">🤖</div>
+            <div class="tcn">ChatGPT</div>
+            <div class="tcd">OpenAI chat platformasi.</div>
+          </div>
+
+          <div class="tc" style="--cc:linear-gradient(90deg,#2563eb,#60a5fa)" onclick="open('https://platform.openai.com','_blank')">
+            <div class="tbg">API</div>
+            <div class="tci">🧩</div>
+            <div class="tcn">OpenAI API</div>
+            <div class="tcd">Developer platforma.</div>
+          </div>
+
+          <div class="tc" style="--cc:linear-gradient(90deg,#7c3aed,#a78bfa)" onclick="open('https://claude.ai','_blank')">
+            <div class="tbg">ALT</div>
+            <div class="tci">⚡</div>
+            <div class="tcn">Claude AI</div>
+            <div class="tcd">Alternativ model.</div>
+          </div>
+
+          <div class="tc" style="--cc:linear-gradient(90deg,#2563eb,#60a5fa)" onclick="open('https://perplexity.ai','_blank')">
+            <div class="tbg">SEARCH</div>
+            <div class="tci">🔍</div>
+            <div class="tcn">Perplexity</div>
+            <div class="tcd">Web izlash.</div>
+          </div>
+
+          <div class="tc" style="--cc:linear-gradient(90deg,#059669,#34d399)" onclick="open('https://gemini.google.com','_blank')">
+            <div class="tbg">ALT</div>
+            <div class="tci">✨</div>
+            <div class="tcn">Gemini</div>
+            <div class="tcd">Google AI.</div>
+          </div>
+
+          <div class="tc" style="--cc:linear-gradient(90deg,#dc2626,#f87171)" onclick="open('https://openai.com/sora','_blank')">
+            <div class="tbg p">VIDEO</div>
+            <div class="tci">🎬</div>
+            <div class="tcn">Sora</div>
+            <div class="tcd">OpenAI video modeli.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
